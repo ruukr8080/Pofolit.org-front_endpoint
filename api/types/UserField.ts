@@ -3,7 +3,7 @@ export interface User {
   email: string;
   nickname: string;
   profileImageUrl: string;
-  birthDay: Date;
+  birthDay: string;
   job: string;
   domain: string;
 }
@@ -13,13 +13,15 @@ export interface UserState extends User {
 export interface SignupRequest {
   nickname: string;
   profileImageUrl: string;
-  birthDay: Date;
+  birthDay: string;
   domain: string;
   job: string;
 }
 export interface TokenRequest {
   id: string; 
 }
+
+
 
 export const FIELDS = [
   { label: "이메일", name: "email", type: "email", readOnly: true },

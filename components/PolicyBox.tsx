@@ -14,16 +14,17 @@ export default function PolicyBox({ type, hovered, onHover, onExpand }: PolicyBo
   const isHovered = hovered === type;
   const isOtherHovered = hovered && hovered !== type;
 
+  const boxClass =
+    isHovered
+      ? "scale-105 z-10"
+      : isOtherHovered
+      ? "scale-90 opacity-60"
+      : "";
+
   return (
     <button
       type="button"
-      className={`relative w-full transition-all duration-300 ${
-        isHovered
-          ? "scale-105 z-10"
-          : isOtherHovered
-          ? "scale-90 opacity-60"
-          : ""
-      }`}
+      className={`relative w-full transition-all duration-300 ${boxClass}`}
       onMouseEnter={() => onHover(type)}
       onMouseLeave={() => onHover(null)}
       onFocus={() => onHover(type)}

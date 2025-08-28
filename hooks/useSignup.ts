@@ -1,13 +1,17 @@
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "../api/Interceptor";
-import { useUserDispatch } from "../context/UserContext";
-import { isValidUUID,parseByIdFromToken,parseByEmailFromToken, parseByNicknameFromToken } from "../api/TokenUtil";
+import { signupUser } from "../api/UserService";
 
+function formatDate(date: string | Date | undefined): string {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  // 날짜가 유효한지 체크
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+} // YYYY-MM-DD
 
 export function useSignup() {
   const router = useRouter();
-  const dispatch = useUserDispatch();
   const [form, setForm] = useState({
     email: "",
     nickname: "",
@@ -17,35 +21,32 @@ export function useSignup() {
     domain: "",
   });
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    if (token) {
-      const id = parseByIdFromToken(token);
-      const email = parseByEmailFromToken(token);
-      const nickname = parseByNicknameFromToken(token);
-      if (!id || !isValidUUID(id)) {
-        alert("잘못된 인증 정보입니다.");
-        router.replace("/login");
-        return;
+  // DB 유저 정보로 폼 초기값 채우기
+  React.useEffect(() => {
+    async function fetchUserAndSetForm() {
+      try {
+        const { getUser } = await import("../api/UserService");
+        const res = await getUser();
+        const user = res.data;
+        setForm((prev) => ({
+          ...prev,
+          email: user.email ?? "",
+          nickname: user.nickname ?? "",
+          birthDay: formatDate(user.birthDay),
+          job: user.job ?? "",
+          domain: user.domain ?? "",
+        }));
+      } catch {
+        // Handle error if needed
       }
-      dispatch({ type: "LOGIN", payload: { id, email: email ?? "", nickname: nickname ?? "" } });
-      setForm((prev) => ({
-        ...prev,
-        email: email ?? "",
-        nickname: nickname ?? "",
-      }));
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-      alert("Access or refresh token is missing from the URL.");
-      router.replace("/login");
     }
-  }, [router, dispatch]);
+    fetchUserAndSetForm();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: value,
@@ -56,14 +57,16 @@ export function useSignup() {
     e.preventDefault();
 
     const updateUser = {
+      email: form.email,
       nickname: form.nickname,
-      birthDay: form.birthDay,
+      profileImageUrl: form.profileImageUrl,
+      birthDay: form.birthDay, // keep as string to match Partial<User>
       job: form.job,
       domain: form.domain,
     };
 
     try {
-      const response = await axios.patch("/api/v1/users/signup", updateUser);
+      const response = await signupUser(updateUser);
       if (response.status === 200) {
         router.replace("/");
         alert("정보가 성공적으로 저장됐습니다.");

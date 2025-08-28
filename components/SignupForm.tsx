@@ -3,10 +3,10 @@ import React from "react";
 import { FIELDS, JOBS, DOMAINS } from "../api/types/UserField";
 
 interface SignupFormProps {
-  form: { [key: string]: string };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  router: { replace: (path: string) => void };
+  readonly form: { readonly [key: string]: string };
+  readonly handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  readonly handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  readonly router: { readonly replace: (path: string) => void };
 }
 
 export default function SignupForm({ form, handleChange, handleSubmit, router }: SignupFormProps) {
@@ -22,9 +22,9 @@ export default function SignupForm({ form, handleChange, handleSubmit, router }:
           <input
             type={field.type}
             name={field.name}
+            value={form[field.name]}
             required={field.required}
             readOnly={field.readOnly}
-            value={form[field.name]}
             onChange={handleChange}
             className={`w-full border rounded px-3 py-2 ${
               field.readOnly ? "bg-gray-100 cursor-not-allowed" : ""
