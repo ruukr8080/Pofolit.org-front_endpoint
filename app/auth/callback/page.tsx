@@ -13,7 +13,7 @@ export default function AuthCallbackPage() {
         router.replace(`/?nickname=${encodeURIComponent(user.nickname)}&email=${encodeURIComponent(user.email)}`);
       })
       .catch(() => {
-        router.replace("/login");
+        // router.replace("/login");
       });
   }, [router]);
 
