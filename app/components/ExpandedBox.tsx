@@ -1,5 +1,5 @@
 import React from "react";
-import { POLICY_CONFIG, PolicyType } from ".././constants/policyConfig";
+import { POLICY_CONFIG, PolicyType } from "../../constants/policyConfig";
 
 interface ExpandedBoxProps {
   readonly type: PolicyType;

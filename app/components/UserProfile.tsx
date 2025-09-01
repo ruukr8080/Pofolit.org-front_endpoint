@@ -1,4 +1,4 @@
-import { User } from "../api/types/UserField";
+import { User } from "@/api/type/userType";
 
 export function UserProfile({ user }: { user: User }) {
   return (

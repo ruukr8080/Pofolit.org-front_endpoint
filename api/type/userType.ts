@@ -1,25 +1,34 @@
+/**
+ * 백엔드 User 엔티티에 대응하는 유저 정보 타입입니다.
+ */
 export interface User {
   id: string;
   email: string;
   nickname: string;
-  profileImageUrl: string;
-  birthDay: string;
-  job: string;
-  domain: string;
+  profileImageUrl?: string | null;
+  providerId: string;
+  registrationId: string;
+  birthDay?: string | null;  // ISO 8601 형식의 날짜 문자열 (YYYY-MM-DD)
+  job?: string | null;
+  domain?: string | null;
+  role: Role;
+  refreshToken?: string | null;
 }
-export interface UserState extends User {
-  isLoggedIn: boolean;
-};
-export interface SignupRequest {
-  nickname: string;
-  profileImageUrl: string;
-  birthDay: string;
-  domain: string;
-  job: string;
+
+/**
+ * 유저 권한에 대한 기준입니다.
+ * GUEST("ROLE_GUEST", "미가입자"),
+ * USER("ROLE_USER", "유저");
+ */
+export enum Role {
+  USER = 'USER',
+  GUEST = 'GUEST',
 }
-export interface TokenRequest {
-  id: string; 
-}
+
+
+
+
+
 
 
 

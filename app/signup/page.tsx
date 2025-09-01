@@ -1,10 +1,7 @@
-// ...existing code...
 "use client";
 
-import React from "react";
-
-import { useSignup } from "../../hooks/useSignup";
-import SignupForm from "../../components/SignupForm";
+import { useSignup } from "@/context/hook/useSignup";
+import SignupForm from "../components/SignupForm";
 
 export default function SignupDetailsPage() {
   

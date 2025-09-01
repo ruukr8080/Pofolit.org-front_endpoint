@@ -2,8 +2,8 @@
 
 import React from "react";
 import { Globe, MessageCircle } from 'lucide-react';
-import PolicySection from "../../components/PolicySection";
-import SocialLoginButton from "../../components/SocialLoginButtons";
+import PolicySection from "../components/PolicySection";
+import SocialLoginButton from "../components/SocialLoginButtons";
 
 export default function LoginPage() {
   return (
@@ -30,8 +30,6 @@ export default function LoginPage() {
           />
         </div>
           <div className="mt-20">{<PolicySection title="이용약관" text="이용약관 내용" />}</div>
-
-        
       </div>
     </div>
   );

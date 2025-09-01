@@ -1,21 +1,10 @@
-"use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { getUser } from "@/api/UserService";
+// app/auth/callback/page.tsx
+'use client';
+
+import { useAuthCallback } from "@/context/hook/useAuthCallback"; 
 
 export default function AuthCallbackPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    getUser()
-      .then((res) => {
-        const user = res.data;
-        router.replace(`/?nickname=${encodeURIComponent(user.nickname)}&email=${encodeURIComponent(user.email)}`);
-      })
-      .catch(() => {
-        router.replace("/login");
-      });
-  }, [router]);
+  useAuthCallback();
 
   return (
     <div
@@ -44,6 +33,9 @@ export default function AuthCallbackPage() {
           로그인 처리 중...
         </h2>
         <p style={{ color: "#888", fontSize: 15 }}>잠시만 기다려 주세요.</p>
+        <div style={{ marginTop: 20, fontSize: 14, color: "#888" }}>
+          <a href="http://localhost:3000/">홈으로 돌아가기</a>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React from "react";
-import { POLICY_CONFIG, PolicyType } from "../constants/policyConfig";
-import  PolicySection  from "../components/PolicySection";
+import { POLICY_CONFIG, PolicyType } from "../../constants/policyConfig";
+import  PolicySection  from "./PolicySection";
 
 interface PolicyBoxProps {
   readonly type: PolicyType;
