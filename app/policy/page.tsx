@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PolicyBox from "../components/PolicyBox";
-import ExpandedBox from "../components/ExpandedBox";
+import PolicyBox from "../uiComponent/PolicyBox";
+import ExpandedBox from "../uiComponent/ExpandedBox";
 import { PolicyType } from "../../constants/policyConfig";
 
 

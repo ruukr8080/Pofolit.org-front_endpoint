@@ -2,8 +2,8 @@
 import { useUserStore } from "@/context/store";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import LogoutButton from "@/app/components/LogoutButton";
-import SignupButton from "@/app/components/SignupButton";
+import LogoutButton from "@/app/uiComponent/LogoutButton";
+import SignupButton from "@/app/uiComponent/SignupButton";
 
 export default function HomePage() {
   // Zustand 스토어에서 유저 상태와 로그인 여부를 바로 가져옵니다.
@@ -15,7 +15,7 @@ export default function HomePage() {
   // 이 페이지는 단순히 스토어에서 데이터를 읽기만 하면 됩니다.
   useEffect(() => {
     if (!isLoggedIn) {
-      // router.replace("/login");
+      router.replace("/login");
     }
   }, [isLoggedIn, router]);
 
@@ -33,7 +33,6 @@ export default function HomePage() {
     );
   }
 
-  // 스토어에서 가져온 유저 정보를 기반으로 UI를 렌더링합니다.
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div

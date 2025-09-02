@@ -1,7 +1,7 @@
 "use client";
 
 import { useSignup } from "@/context/hook/useSignup";
-import SignupForm from "../components/SignupForm";
+import SignupForm from "../uiComponent/SignupForm";
 
 export default function SignupDetailsPage() {
   
