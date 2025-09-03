@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
-import { ApiResult } from "../type/apiResultType";
-import { AppErrorCode } from "../type/apiCode";
+import { ApiResult } from "../types/apiResultType";
+import { AppErrorCode } from "../types/apiCode";
 
 /**
  * 타입 가드 함수: 응답 객체가 ApiResultType 형식인지 확인합니다.

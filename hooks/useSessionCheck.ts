@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { getUserRequest } from "@/api/util/userUtil";
-import { useUserStore } from "@/context/store";
+import { getUserRequest } from "@/api/utils/userUtil";
+import { authStore } from "@/context/authStore";
 
 /**
  * 애플리케이션이 로드될 때마다 유저 세션을 확인하는 훅
@@ -13,17 +13,19 @@ import { useUserStore } from "@/context/store";
  * - 재발급 실패 시, `useUserStore().logout()` 호출하여 강제 로그아웃 처리
  */
 export const useSessionCheck = () => {
-  const { login, logout } = useUserStore();
+  const { setAuthState, logout } = authStore();
+
 
   useEffect(() => {
     // 세션 체크 로직
+    setAuthState("");
     const checkSession = async () => {
       try {
         const res = await getUserRequest();
         // 응답 데이터가 null이 아니면 로그인 상태 유지
         if (res.data) {
           console.log("세션 복구 성공:", res.data);
-          login(res.data);
+          // login(true, ""); // accessToken은 빈 문자열로 전달
         } else {
           // 서버에서 유저 정보가 null로 응답되면 로그아웃 처리
           console.log("유효한 세션이 없습니다.");
@@ -31,11 +33,11 @@ export const useSessionCheck = () => {
         }
       } catch (error) {
         // API 요청 실패 시 로그아웃
-        console.error("세션 확인 중 오류 발생:", error);
-        logout();
+        // console.error("세션 확인 중 오류 발생:", error);
+        // logout();
       }
     };
 
     checkSession();
-  }, [login, logout]);
+  }, [setAuthState, logout]);
 };

@@ -3,9 +3,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signupRequest } from "@/api/util/userUtil";
-import { useUserStore } from "@/context/store";
-import { User } from "@/api/type/userType";
+import { signupRequest } from "@/api/utils/userUtil";
+import { userStore } from "@/context/userStore";
+import { UserRequest } from "@/api/types/apiUser";
 
 function formatDate(date: string | Date | undefined | null): string {
   if (!date) return "";
@@ -16,9 +16,9 @@ function formatDate(date: string | Date | undefined | null): string {
 
 export function useSignup() {
   const router = useRouter();
-  const { user, updateNickname } = useUserStore();
+  const { user, updateNickname } = userStore();
 
-  const [form, setForm] = useState({
+  const [form, setUserState] = useState({
     email: user?.email ?? "",
     nickname: user?.nickname ?? "",
     profileImageUrl: user?.profileImageUrl ?? "",

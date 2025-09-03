@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import PolicyBox from "../uiComponent/PolicyBox";
-import ExpandedBox from "../uiComponent/ExpandedBox";
+import PolicyBox from "../../components/PolicyBox";
+import ExpandedBox from "../../components/ExpandedBox";
 import { PolicyType } from "../../constants/policyConfig";
 
 
@@ -15,7 +15,7 @@ export default function PolicyPage() {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) return null; // SSR에서는 아무것도 렌더링하지 않음
+  if (!isMounted) return null; 
 
   return (
     <div className="flex flex-col items-center gap-4 w-full transition-all duration-500 mt-8 px-8 py-4">

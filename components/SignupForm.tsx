@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { FIELDS, JOBS, DOMAINS } from "@/api/type/userType";
+import { FIELDS, JOBS, DOMAINS } from "@/api/type/user";
 
 interface SignupFormProps {
   readonly form: { readonly [key: string]: string };

@@ -1,10 +1,12 @@
 // app/auth/callback/page.tsx
-'use client';
 
-import { useAuthCallback } from "@/context/hook/useAuthCallback"; 
+'use client';
+import { useAuthStore } from "@/hooks/useAuthStore"; 
+import { useUserProfileCardFetch } from "@/hooks/useUserStore"; 
 
 export default function AuthCallbackPage() {
-  useAuthCallback();
+  useAuthStore();
+  useUserProfileCardFetch();
 
   return (
     <div

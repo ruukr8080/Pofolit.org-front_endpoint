@@ -1,6 +1,6 @@
-import { User } from "@/api/type/userType";
+import { UserRequest } from "@/api/types/apiUser";
 
-export function UserProfile({ user }: { user: User }) {
+export function UserProfile({ user }: { user: UserRequest }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       {user.profileImageUrl && (

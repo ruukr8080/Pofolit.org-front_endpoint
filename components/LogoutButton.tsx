@@ -1,15 +1,19 @@
 import React from "react";
 import { useRouter } from "next/navigation";
+import { userStore } from "@/context/userStore";
+import { logoutRequest } from "@/api/utils/tokenUtil";
 
 const LogoutButton: React.FC = () => {
   const router = useRouter();
+  const { removeUser } = userStore();
 
   const handleLogout = () => {
-    // 토큰 쿠키 삭제.
-    // 추가적으로 context 상태도 초기화
-    // 예: dispatch({ type: "LOGOUT" });
-    // 로그인 페이지로 이동
-    router.replace("/login");
+    // 토큰 쿠키 삭제 (accessToken, refreshToken)
+    logoutRequest();
+    // context 상태도 초기화
+    removeUser();
+    // 홈페이지로 이동
+    router.replace("/");
   };
 
   return (

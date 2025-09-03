@@ -1,9 +1,9 @@
 import axios from "axios";
-import { ex } from "@/api/handler/customExceptionHandler";
+import { ex } from "@/api/handlers/customExceptionHandler";
 import type { AxiosError } from "axios";
-import { reissueToken } from "@/api/util/tokenUtil";
-import { AppErrorCode } from "@/api/type/apiCode";
-
+import { reissueToken } from "@/api/utils/tokenUtil";
+import { AppErrorCode } from "@/api/types/apiCode";
+import { authStore } from "@/context/authStore";
 
 // 타입스크립트 오류 해결을 위해 AxiosRequestConfig에 _retry 속성을 추가합니다.
 declare module 'axios' {
@@ -14,13 +14,33 @@ declare module 'axios' {
 
 /**
  * 요청 및 응답 인터셉터입니다.
- * 모든 API 요청 인스턴스에 적용합니다.
+ * "/api/v1/auth" 로 시작하는 모든 API 요청 인스턴스에 적용합니다.
  */
 const instance = axios.create({
-  baseURL: "/api",
+  baseURL: "/api/v1/auth",
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
+
+// 요청 인터셉터: accessToken을 헤더에 자동 포함
+instance.interceptors.request.use(
+  (config) => {
+    const accessToken = authStore.getState().accessToken;
+    if (accessToken) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(new Error(`요청 인터셉터 오류: ${error.message}`))
+);
+
+export default instance;
+  
+
+instance.interceptors.response.use(
+
+);
 
 /** 모든 에러 응답을 처리하는 인터셉터
  * 응답이 없거나 http 에러가 발생한 경우 실행합니다.
@@ -49,12 +69,10 @@ instance.interceptors.response.use(
           console.error("토큰 재발급 실패:", reissueError);
           // 여기에 로그아웃 로직 추가
           // 예: useUserStore.getState().logout();
-          return Promise.reject(reissueError);
+          return Promise.reject(new Error(`토큰 재발급 실패: ${reissueError}`));
         }
       }
     }
-
-  
     // 다른 모든 에러는 customExceptionHandler로 넘겨서 처리합니다.
     if (error.response) {
       ex(error);
@@ -66,4 +84,4 @@ instance.interceptors.response.use(
   }
 );
 
-export default instance;
+

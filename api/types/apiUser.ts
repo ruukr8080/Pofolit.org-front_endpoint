@@ -1,13 +1,14 @@
 /**
  * 백엔드 User 엔티티에 대응하는 유저 정보 타입입니다.
  */
-export interface User {
-  id: string;
-  email: string;
-  nickname: string;
+
+export interface UserRequest {
+  id: string | null;
+  email: string | null;
+  nickname: string | null;
   profileImageUrl?: string | null;
-  providerId: string;
-  registrationId: string;
+  providerId: string | null;
+  registrationId: string | null;
   birthDay?: string | null;  // ISO 8601 형식의 날짜 문자열 (YYYY-MM-DD)
   job?: string | null;
   domain?: string | null;

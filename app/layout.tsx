@@ -1,13 +1,13 @@
 "use client";
 
-import { useSessionCheck } from "@/context/hook/useSessionCheck"; 
+// import { useSessionCheck } from "@/context/hook/useSessionCheck"; 
 import ".././styles/globals.css";
 
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  useSessionCheck();
+  // useSessionCheck();
   return (
     <html
       lang="en"
