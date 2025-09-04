@@ -11,7 +11,5 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // allowedDevOrigins: ["https://accounts.google.com", "https://kauth.kakao.com"],
 };
-
 export default nextConfig;
