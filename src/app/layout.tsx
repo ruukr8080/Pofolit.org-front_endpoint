@@ -5,6 +5,8 @@ import ".././styles/globals.css";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from "@/store/store";
+import GlobalErrorModal from "@/components/ErrorModal";
+import Header from "@/components/client/Header";
 
 export default function RootLayout({
   children,
@@ -25,6 +27,8 @@ export default function RootLayout({
       <body>
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
+            <GlobalErrorModal />
+            <Header />
             {children}
           </PersistGate>
         </Provider>

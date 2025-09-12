@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import UserWidget from "@/components/UserWidget";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "@/store/store";
+import { setUserState, removeUserInfo } from "@/store/userSlice";
+import { useGetUserInfoQuery } from "@/store/apiConfig";
+import { logout } from "@/store/authSlice";
 import UserAvatar from "../UserAvartar";
 import SignupButton from "../SignupButton";
 
@@ -43,7 +47,42 @@ function HeaderDesktopAction() {
 
 // 데스크탑 액션 영역 (아바타/로그인버튼)
 function HeaderDesktopUser() {
-  const isSigned = useSelector((state: any) => state.auth.isSigned);
+  const dispatch = useDispatch();
+  const isSigned = useSelector((state: RootState) => !!state.auth.pre);
+  const user = useSelector((state: RootState) => state.user);
+  const profileImageUrl = user.profileImageUrl;
+  const pre = useSelector((state: RootState) => state.auth.pre);
+  const [showUserWidget, setShowUserWidget] = React.useState(false);
+
+  // RTK Query로 유저 정보 fetch (자동 deduplication)
+  const { data, error, isSuccess } = useGetUserInfoQuery(undefined, {
+    skip: !isSigned || !pre,
+  });
+
+  useEffect(() => {
+    console.log("[HeaderDesktopUser] user state:", user);
+    if (isSuccess && data?.data) {
+      dispatch(setUserState(data.data));
+    }
+    if (error && "status" in error && error.status === 401) {
+      dispatch(removeUserInfo());
+      dispatch(logout());
+      window.dispatchEvent(
+        new CustomEvent("globalError", {
+          detail: "인증이 만료되었습니다. 다시 로그인 해주세요.",
+        })
+      );
+    } else if (error) {
+      window.dispatchEvent(
+        new CustomEvent("globalError", { detail: "유저 정보 조회 실패" })
+      );
+    }
+  }, [isSuccess, data, error, dispatch]);
+
+  // UserAvatar 클릭 시 UserWidget 모달 오픈
+  const handleAvatarClick = () => setShowUserWidget(true);
+  const handleWidgetClose = () => setShowUserWidget(false);
+
   return (
     <div className="flex items-center gap-2">
       <button className="p-2 rounded-lg hover:bg-gray-100">
@@ -64,16 +103,27 @@ function HeaderDesktopUser() {
       </button>
       {isSigned ? (
         <>
-          <UserAvatar
-            imageUrl="https://via.placeholder.com/80"
-            altText="User Avatar"
-          />
-          <UserWidget />
+          <button
+            type="button"
+            className="cursor-pointer bg-transparent border-none p-0"
+            onClick={handleAvatarClick}
+            aria-label="프로필 열기"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") handleAvatarClick();
+            }}
+          >
+            <UserAvatar
+              imageUrl={profileImageUrl || "https://via.placeholder.com/80"}
+              altText="avatar"
+            />
+          </button>
+          <UserWidget open={showUserWidget} onClose={handleWidgetClose} />
         </>
       ) : (
         <>
           <SignupButton />
-          <UserWidget />
+          <UserWidget open={showUserWidget} onClose={handleWidgetClose} />
         </>
       )}
     </div>

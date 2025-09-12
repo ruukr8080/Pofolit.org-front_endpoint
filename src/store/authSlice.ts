@@ -1,38 +1,31 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface AuthState {
-  accessToken: string | null;
-  role: 'USER' | 'GUEST' | null;
-  isSigned: boolean;
+  pre: string | null;
+  role: "USER" | "GUEST" | null;
 }
 
 const initialState: AuthState = {
-  accessToken: null,
+  pre: null,
   role: null,
-  isSigned: false,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
-    setAuthState(state, action: PayloadAction<string>) {
-      state.accessToken = action.payload;
-      state.isSigned = true;
-    },
-    setSignState(state, action: PayloadAction<boolean>) {
-      state.isSigned = action.payload;
-    },
-    logout(state) {
-      state.accessToken = null;
-      state.isSigned = false;
+    setSignState(state, action: PayloadAction<string | null>) {
+      state.pre = action.payload;
       state.role = null;
     },
-    setRole(state, action: PayloadAction<'USER' | 'GUEST' | null>) {
-      state.role = action.payload;
+    logout(state) {
+      state.pre = null;
+    },
+    setRole(state, action: PayloadAction<"USER" | "GUEST" | null>) {
+      state.pre = action.payload;
     },
   },
 });
 
-export const { setAuthState, setSignState, logout, setRole } = authSlice.actions;
+export const { setSignState, logout, setRole } = authSlice.actions;
 export default authSlice.reducer;

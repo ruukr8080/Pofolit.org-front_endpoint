@@ -4,7 +4,6 @@ import { User, Role } from "@/types/user";
 export interface UserState extends User {}
 
 const initialState: UserState = {
-  id: null,
   email: null,
   nickname: null,
   profileImageUrl: null,
@@ -21,6 +20,9 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
+    setUserAvatar(state, action: PayloadAction<string | null>) {
+      return { ...state, profileImageUrl: action.payload };
+    },
     setUserState(state, action: PayloadAction<User>) {
       return { ...state, ...action.payload };
     },
@@ -30,5 +32,6 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUserState, removeUserInfo } = userSlice.actions;
+export const { setUserAvatar, setUserState, removeUserInfo } =
+  userSlice.actions;
 export default userSlice.reducer;

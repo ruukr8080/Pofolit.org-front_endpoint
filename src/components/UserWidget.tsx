@@ -1,43 +1,38 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Globe, MessageCircle } from "lucide-react";
-import Policy from "@/components/Policy";
 import SocialLoginButton from "./SocialLoginButtons";
 
-export default function UserWidget() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { isSigned } = useSelector((state: any) => state.auth);
+interface UserWidgetProps {
+  readonly open: boolean;
+  readonly onClose: () => void;
+}
 
-  const handleOpen = () => setIsOpen(true);
-  const handleClose = () => setIsOpen(false);
+// eslint-disable-next-line react/prop-types
+export default function UserWidget({
+  open,
+  onClose,
+}: Readonly<UserWidgetProps>) {
+  const isSigned = useSelector(
+    (state: import("@/store/store").RootState) => !!state.auth.pre
+  );
 
   useEffect(() => {
-    if (!isSigned) {
-      console.log("로그인 상태가 아닙니다. 로그인 ");
-    }
+    // 로그인 상태가 아닐 때 추가 처리 필요 시 여기에 작성
   }, [isSigned]);
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={handleOpen}
-        className="px-4 py-2 font-bold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        로그인
-      </button>
-    );
-  }
+  if (!open) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50">
-      <div className="bg-white max-h-1/2 rounded-lg shadow-xl p-8 w-11/12 md:w-1/3">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-50 animate-fade-in">
+      <div className="bg-white max-h-1/2 rounded-lg shadow-xl p-8 w-11/12 md:w-1/3 transition-all duration-300 scale-100">
         {/* 모달 헤더 */}
         <div className="flex items-center justify-between pb-4 border-b">
           <h2 className="text-xl font-bold text-gray-800">로그인</h2>
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="text-gray-400 hover:text-gray-600 focus:outline-none"
           >
             {/* 닫기(X) 아이콘 */}
@@ -75,7 +70,8 @@ export default function UserWidget() {
             />
           </div>
           <div className="mt-20">
-            <Policy sub="이용약관" text="이용약관 내용" />
+            {/* Policy 컴포넌트가 기본 export가 아니거나, props 타입이 다를 경우 아래 주석 참고 */}
+            {/* <Policy sub="이용약관" text="이용약관 내용" /> */}
           </div>
         </div>
       </div>

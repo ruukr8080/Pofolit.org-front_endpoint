@@ -1,23 +1,32 @@
 // app/auth/callback/page.tsx
 
 "use client";
-import { useAuthStore } from "@/hooks/useAuthStore";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "@hooks/useUserStore";
+import { useDispatch } from "react-redux";
+import { setSignState } from "@/store/authSlice";
 
 export default function AuthCallbackPage() {
-  useAuthStore();
   const router = useRouter();
-  const { user } = useUserStore();
-  useEffect(() => {
-    if (user && user.email) {
-      console.log("User info fetched, redirecting to home.");
-      router.replace("/");
-    } else {
-      console.log("No user info, redirecting to login.");
-    }
-  }, [user, router]);
+  const dispatch = useDispatch();
+
+  console.log("AuthCallbackPage useEffect 진입");
+  // 1. accessToken을 쿠키에서 읽어 로컬스토리지에 저장
+  const getCookie = (name: string) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
+  };
+  const accessToken = getCookie("pre");
+  console.log("pre:", accessToken);
+  if (accessToken) {
+    localStorage.setItem("pre", accessToken);
+    dispatch(setSignState(accessToken));
+    // 인증 인스턴스만 store/로컬스토리지에 저장 (유저 정보 fetch는 Header에서 처리)
+    router.replace("/");
+  }
+
   // user 정보는 accessToken 준비 이벤트("authed")를 통해 한 번만 가져오도록 변경
   return (
     <div

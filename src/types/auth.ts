@@ -1,6 +1,7 @@
-
-export interface Auth {
-  accessToken: string | null;
+export interface PreTicket {
+  token: string | null;
+}
+export interface Ticket {
+  token: string | null;
   role: "USER" | "GUEST" | null;
-  isSigned: boolean;
 }

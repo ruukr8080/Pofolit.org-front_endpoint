@@ -1,7 +1,3 @@
-import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { setUserState, removeUserInfo } from "@/store/userSlice";
-
 interface UserAvatarProps {
   readonly imageUrl: string;
   readonly altText: string;

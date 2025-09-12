@@ -1,15 +1,17 @@
 /**
  * 백엔드 User 엔티티에 대응하는 유저 정보 타입입니다.
  */
-
+export interface UserAvatarProps {
+  readonly imageUrl: string;
+  readonly altText: string;
+}
 export interface User {
-  id: string | null;
   email: string | null;
   nickname: string | null;
   profileImageUrl?: string | null;
   providerId: string | null;
   registrationId: string | null;
-  birthDay?: string | null;  // ISO 8601 형식의 날짜 문자열 (YYYY-MM-DD)
+  birthDay?: string | null; // ISO 8601 형식의 날짜 문자열 (YYYY-MM-DD)
   job?: string | null;
   domain?: string | null;
   role: Role;
@@ -22,16 +24,9 @@ export interface User {
  * USER("ROLE_USER", "유저");
  */
 export enum Role {
-  USER = 'USER',
-  GUEST = 'GUEST',
+  USER = "USER",
+  GUEST = "GUEST",
 }
-
-
-
-
-
-
-
 
 export const FIELDS = [
   { label: "이메일", name: "email", type: "email", readOnly: true },

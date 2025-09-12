@@ -1,16 +1,21 @@
-"use client";
-
-import { useEffect, useState } from "react";
+// ...existing code...
 import { FIELDS, JOBS, DOMAINS } from "@/types/user";
 
 interface SignupFormProps {
   readonly form: { readonly [key: string]: string };
-  readonly handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  readonly handleChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => void;
   readonly handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   readonly router: { readonly replace: (path: string) => void };
 }
 
-export default function SignupForm({ form, handleChange, handleSubmit, router }: SignupFormProps) {
+export default function SignupForm({
+  form,
+  handleChange,
+  handleSubmit,
+  router,
+}: SignupFormProps) {
   return (
     <form
       className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md flex flex-col gap-6"
