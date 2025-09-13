@@ -104,23 +104,20 @@ function PolicyBox({ type, hovered, onHover, onExpand }: PolicyProps) {
   const isHovered = hovered === type;
   const isOtherHovered = hovered && hovered !== type;
   const { title, text } = POLICY_CONFIG[type];
-
-  // Tailwind CSS 클래스로 동적 스타일 적용
   let boxClass = "";
   if (isHovered) {
     boxClass = "scale-105 z-10 shadow-lg ring-4 ring-blue-500";
   } else if (isOtherHovered) {
     boxClass = "scale-95 opacity-60";
   }
-
   return (
     <button
       type="button"
       className={`relative w-full transition-all duration-300 rounded-xl bg-white shadow-md hover:shadow-xl ${boxClass}`}
-      onMouseEnter={() => onHover}
-      onMouseLeave={() => onHover}
-      onFocus={() => onHover}
-      onBlur={() => onHover}
+      onMouseEnter={() => onHover(type)}
+      onMouseLeave={() => onHover(null)}
+      onFocus={() => onHover(type)}
+      onBlur={() => onHover(null)}
       onClick={() => onExpand(type)}
       aria-label={title + " 더 크게 보기"}
     >
@@ -131,6 +128,7 @@ function PolicyBox({ type, hovered, onHover, onExpand }: PolicyProps) {
             ? "opacity-100 translate-y-0"
             : "opacity-0 pointer-events-none translate-y-4"
         }`}
+        aria-hidden="true"
       >
         더 크게 보기
       </span>
@@ -139,24 +137,30 @@ function PolicyBox({ type, hovered, onHover, onExpand }: PolicyProps) {
 }
 
 // 확장된 박스 (모달) 컴포넌트
+
 function ExpandedBox({ type, onClose }: ExpandedBoxProps) {
   const { title, text } = POLICY_CONFIG[type];
+  // ESC 키 접근성
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") onClose();
+  };
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
       onClick={onClose}
-      role="button"
-      tabIndex={0}
       aria-modal="true"
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " " || e.key === "Escape") onClose();
-      }}
+      role="dialog"
+      tabIndex={-1}
+      onKeyDown={handleKeyDown}
     >
-      <div
+      <section
         className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col relative transition-transform duration-500"
         onClick={(e) => e.stopPropagation()}
+        tabIndex={0}
+        role="document"
+        aria-label={title}
+        onKeyDown={handleKeyDown}
       >
-        {/* ... */}
         <div className="flex-1 overflow-y-auto">
           <PolicyContentSection sub={title} text={text} />
         </div>
@@ -168,12 +172,11 @@ function ExpandedBox({ type, onClose }: ExpandedBoxProps) {
             닫기
           </button>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
-// 메인 페이지 컴포넌트
 export default function PolicyPage() {
   const [hovered, setHovered] = useState<PolicyType | null>(null);
   const [expanded, setExpanded] = useState<PolicyType | null>(null);
@@ -197,7 +200,10 @@ export default function PolicyPage() {
             />
           </>
         ) : (
-          <ExpandedBox type={expanded} onClose={() => setExpanded(null)} />
+          <ExpandedBox
+            type={expanded as PolicyType}
+            onClose={() => setExpanded(null)}
+          />
         )}
       </div>
     </div>

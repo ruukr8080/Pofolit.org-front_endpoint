@@ -18,15 +18,28 @@ function ErrorModal({ message, onClose }: ErrorModalProps) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
+  // dialog ref를 사용하여 showModal() 호출
+  const [dialogRef, setDialogRef] = useState<HTMLDialogElement | null>(null);
+  useEffect(() => {
+    if (dialogRef && !dialogRef.open) {
+      dialogRef.showModal();
+    }
+  }, [dialogRef]);
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-      onClick={onClose}
+    <dialog
+      ref={setDialogRef}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-0 border-0"
       aria-modal="true"
+      onClose={onClose}
+      onClick={(e) => {
+        // backdrop 클릭 시 닫기
+        if (e.target === dialogRef) onClose();
+      }}
     >
       <div
         className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative"
-        onClick={(e) => e.stopPropagation()} // 이벤트 버블링을 막아 모달 배경 클릭 시에만 닫히도록 합니다.
+        onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 닫힘 방지
         tabIndex={0}
         aria-label="오류 모달"
       >
@@ -42,7 +55,7 @@ function ErrorModal({ message, onClose }: ErrorModalProps) {
           닫기
         </button>
       </div>
-    </div>
+    </dialog>
   );
 }
 

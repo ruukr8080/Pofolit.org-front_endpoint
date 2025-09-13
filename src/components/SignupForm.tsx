@@ -24,8 +24,14 @@ export default function SignupForm({
       <h2 className="text-2xl font-bold text-center mb-2">추가 정보 입력</h2>
       {FIELDS.map((field) => (
         <div key={field.name}>
-          <label className="block font-semibold mb-1">{field.label}</label>
+          <label
+            htmlFor={`signup-${field.name}`}
+            className="block font-semibold mb-1"
+          >
+            {field.label}
+          </label>
           <input
+            id={`signup-${field.name}`}
             type={field.type}
             name={field.name}
             value={form[field.name]}
@@ -41,8 +47,11 @@ export default function SignupForm({
       ))}
       {/* 업무분야 선택 */}
       <div>
-        <label className="block font-semibold mb-1">업무분야</label>
+        <label htmlFor="signup-domain" className="block font-semibold mb-1">
+          업무분야
+        </label>
         <select
+          id="signup-domain"
           name="domain"
           value={form.domain}
           onChange={handleChange}
@@ -59,8 +68,11 @@ export default function SignupForm({
       </div>
       {/* 직업 선택 */}
       <div>
-        <label className="block font-semibold mb-1">직업</label>
+        <label htmlFor="signup-job" className="block font-semibold mb-1">
+          직업
+        </label>
         <select
+          id="signup-job"
           name="job"
           value={form.job}
           onChange={handleChange}

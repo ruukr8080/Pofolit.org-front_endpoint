@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { Globe, MessageCircle } from "lucide-react";
