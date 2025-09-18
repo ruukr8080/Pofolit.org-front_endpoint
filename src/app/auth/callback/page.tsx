@@ -1,32 +1,133 @@
-// app/auth/callback/page.tsx
-
+// app/auth/callback/page.tsx  
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
 import { setSignState } from "@/store/authSlice";
+import { setUserState } from "@/store/userSlice";
+import type { User } from "@/types/user";
+import { Role } from "@/types/user";
+
+const setCookie = (name: string, value: string, maxAge: number = 3600) => {
+  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`;
+};
+
+// CSP 호환을 위한 커스텀 Base64 디코딩 함수
+const base64Decode = (str: string): string => {
+  // Base64 문자 집합
+  const base64Chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  let output = "";
+
+  // 입력 문자열 정리
+  str = str.replace(/[^A-Za-z0-9+/=]/g, "");
+
+  for (let i = 0; i < str.length; i += 4) {
+    const enc1 = base64Chars.indexOf(str.charAt(i));
+    const enc2 = base64Chars.indexOf(str.charAt(i + 1));
+    const enc3 = base64Chars.indexOf(str.charAt(i + 2));
+    const enc4 = base64Chars.indexOf(str.charAt(i + 3));
+
+    const chr1 = (enc1 << 2) | (enc2 >> 4);
+    const chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+    const chr3 = ((enc3 & 3) << 6) | enc4;
+
+    output += String.fromCharCode(chr1);
+    if (enc3 !== 64) output += String.fromCharCode(chr2);
+    if (enc4 !== 64) output += String.fromCharCode(chr3);
+  }
+
+  return output;
+};
+
+// 토큰 만료 확인 함수
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const payload = JSON.parse(base64Decode(token.split(".")[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+};
+
+// preToken에서 유저 정보 추출 함수
+const extractUserInfoFromToken = (token: string): User | null => {
+  try {
+    const payload = JSON.parse(base64Decode(token.split(".")[1]));
+
+    // preToken에서 필요한 정보 추출
+    const userInfo: User = {
+      email: payload.email || null,
+      nickname: payload.nickname || null,
+      profileImageUrl: payload.picture || null,
+      providerId: payload.sub || null,
+      registrationId: ["google", "kakao"],
+      role: Role.USER,
+    };
+
+    return userInfo;
+  } catch (error) {
+    console.error("토큰 파싱 실패:", error);
+    return null;
+  }
+};
 
 export default function AuthCallbackPage() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const [isProcessing, setIsProcessing] = useState(true);
 
-  console.log("AuthCallbackPage useEffect 진입");
-  // 1. accessToken을 쿠키에서 읽어 로컬스토리지에 저장
-  const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(";").shift();
-  };
-  const accessToken = getCookie("pre");
-  console.log("pre:", accessToken);
-  if (accessToken) {
-    localStorage.setItem("pre", accessToken);
-    dispatch(setSignState(accessToken));
-    // 인증 인스턴스만 store/로컬스토리지에 저장 (유저 정보 fetch는 Header에서 처리)
-    router.replace("/");
-  }
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get("token");
 
-  // user 정보는 accessToken 준비 이벤트("authed")를 통해 한 번만 가져오도록 변경
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(";").shift();
+    };
+    const tokenFromCookie = getCookie("pre");
+
+    const preToken = tokenFromUrl || tokenFromCookie;
+
+    console.log("URL에서 토큰 추출 :", tokenFromUrl);
+    console.log("쿠키에서 토큰 추출 :", tokenFromCookie);
+    console.log("결과:", preToken);
+    if (preToken && !isTokenExpired(preToken)) {
+      // preToken에서 유저 정보 추출 및 스토어에 저장
+      const userInfo = extractUserInfoFromToken(preToken);
+      if (userInfo) {
+        dispatch(setUserState(userInfo));
+        console.log("preToken에서 추출한 유저 정보:", userInfo);
+      }
+
+      // preToken을 일반 쿠키로 저장 (500분 유효)
+      setCookie("pre", preToken, 300000); // 5분 = 300초
+      dispatch(setSignState(preToken));
+
+      console.log("preToken 저장 및 인증 상태 설정 완료");
+
+      // 홈페이지로 리다이렉션 (유저 정보는 이미 스토어에 저장됨)
+      router.replace("/");
+    } else if (preToken && isTokenExpired(preToken)) {
+      console.warn("preToken이 만료되었습니다.");
+      // 만료된 토큰 제거하고 로그인 페이지로 리다이렉션 권유하는 메세지모달 표시
+      document.cookie = "pre=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      router.replace("/auth/login?error=token_expired");
+    } else {
+      console.warn(
+        "preToken을 찾을 수 없습니다. URL 파라미터와 쿠키 모두 확인했습니다."
+      );
+      console.log("URL 파라미터:", tokenFromUrl);
+      console.log("쿠키 값:", tokenFromCookie);
+      router.replace("/auth/login?error=no_token");
+    }
+
+    setIsProcessing(false);
+  }, [router, dispatch]);
+
+  // 로딩 UI 표시
   return (
     <div
       style={{
@@ -51,9 +152,11 @@ export default function AuthCallbackPage() {
         }}
       >
         <h2 style={{ fontWeight: 700, fontSize: 22, marginBottom: 16 }}>
-          로그인 처리 중...
+          {isProcessing ? "로그인 처리 중..." : "리다이렉션 중..."}
         </h2>
-        <p style={{ color: "#888", fontSize: 15 }}>잠시만 기다려 주세요.</p>
+        <p style={{ color: "#888", fontSize: 15 }}>
+          {isProcessing ? "잠시만 기다려 주세요." : "페이지로 이동합니다."}
+        </p>
         <div style={{ marginTop: 20, fontSize: 14, color: "#888" }}>
           <a href="http://localhost:3000/">홈으로 돌아가기</a>
         </div>

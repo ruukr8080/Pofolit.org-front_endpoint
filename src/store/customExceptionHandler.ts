@@ -1,6 +1,49 @@
 import { ExCode, ApiResult } from ".././types/http";
 // window.addEventListener("globalError", ...)로 아무데서나 쓰면댐
 
+// 에러 로깅 함수
+const logError = (error: unknown, context?: Record<string, any>) => {
+  const errorInfo = {
+    timestamp: new Date().toISOString(),
+    error:
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : error,
+    context,
+    userAgent: navigator.userAgent,
+    url: window.location.href,
+  };
+
+  // 개발 환경에서는 콘솔에 출력
+  if (process.env.NODE_ENV === "development") {
+    console.error("🚨 Error logged:", errorInfo);
+  }
+
+  // 프로덕션 환경에서는 외부 로깅 서비스로 전송 (예: Sentry, LogRocket 등)
+  if (process.env.NODE_ENV === "production") {
+    // TODO: 외부 로깅 서비스 연동
+    // 예: Sentry.captureException(error, { extra: context });
+    console.error("🚨 Production error:", errorInfo);
+  }
+
+  // 로컬 스토리지에 최근 에러 저장 (디버깅용)
+  try {
+    const recentErrors = JSON.parse(
+      localStorage.getItem("recentErrors") || "[]"
+    );
+    recentErrors.unshift(errorInfo);
+    // 최근 10개 에러만 유지
+    if (recentErrors.length > 10) recentErrors.pop();
+    localStorage.setItem("recentErrors", JSON.stringify(recentErrors));
+  } catch (e) {
+    console.warn("Failed to save error to localStorage:", e);
+  }
+};
+
 // ApiResult 타입 가드 (fetch/RTK Query 범용)
 function isApiResult<T>(obj: unknown): obj is ApiResult<T> {
   return (
@@ -15,6 +58,7 @@ function isApiResult<T>(obj: unknown): obj is ApiResult<T> {
 // 유효성 검사 오류 메시지 핸들러 (fetch/RTK Query 범용)
 const handleValidationErrors = (details: { [key: string]: string }) => {
   const messages = Object.values(details).join("\n");
+  logError(new Error("Validation Error"), { details, messages });
   window.dispatchEvent(new CustomEvent("globalError", { detail: messages }));
 };
 
@@ -28,6 +72,9 @@ export function handleApiError(
   error: unknown,
   dispatch?: (...args: unknown[]) => void
 ) {
+  // 에러 로깅
+  logError(error, { dispatch: !!dispatch });
+
   const errObj = error as Record<string, any>;
   const status = errObj.status;
   const data = errObj.data || errObj;

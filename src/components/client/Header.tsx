@@ -1,12 +1,26 @@
 import React, { useEffect } from "react";
-import UserWidget from "@/components/UserWidget";
+import HeaderWidget from "@/components/HeaderWidget";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/store/store";
 import { setUserState, removeUserInfo } from "@/store/userSlice";
-import { useGetUserInfoQuery } from "@/store/apiConfig";
-import { logout } from "@/store/authSlice";
+import {
+  useGetUserInfoQuery,
+  useExchangePreTokenMutation,
+} from "@/store/apiConfig";
+import { logout, setSignState } from "@/store/authSlice";
 import UserAvatar from "../UserAvartar";
 import SignupButton from "../SignupButton";
+
+// 쿠키 관련 유틸리티 함수들
+const getCookie = (name: string): string | undefined => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+};
+
+const setCookie = (name: string, value: string, maxAge: number = 3600) => {
+  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`;
+};
 
 // 데스크탑 메인 로고/타이틀 영역
 function HeaderDesktopMain() {
@@ -23,8 +37,11 @@ function HeaderFormSearch() {
     <form className="flex items-center gap-2">
       <input
         type="text"
+        id="search-input"
+        name="search"
         placeholder="검색..."
         className="px-3 py-2 border rounded-lg focus:outline-none focus:ring"
+        autoComplete="search"
       />
       <button
         type="submit"
@@ -54,30 +71,48 @@ function HeaderDesktopUser() {
   const pre = useSelector((state: RootState) => state.auth.pre);
   const [showUserWidget, setShowUserWidget] = React.useState(false);
 
-  // RTK Query로 유저 정보 fetch (자동 deduplication)
+  // accessToken이 있는지 확인
+  const hasAccessToken = !!getCookie("accessToken");
+
+  // 토큰 교환 및 유저 정보 조회
+  const [exchangePreToken] = useExchangePreTokenMutation();
   const { data, error, isSuccess } = useGetUserInfoQuery(undefined, {
-    skip: !isSigned || !pre,
+    skip: !isSigned || !pre || hasAccessToken, // accessToken이 있으면 skip
   });
 
+  // preToken이 있고 accessToken이 없으면 토큰 교환 실행
   useEffect(() => {
-    console.log("[HeaderDesktopUser] user state:", user);
-    if (isSuccess && data?.data) {
-      dispatch(setUserState(data.data));
-    }
-    if (error && "status" in error && error.status === 401) {
-      dispatch(removeUserInfo());
-      dispatch(logout());
-      window.dispatchEvent(
-        new CustomEvent("globalError", {
-          detail: "인증이 만료되었습니다. 다시 로그인 해주세요.",
+    if (isSigned && pre && !hasAccessToken) {
+      console.log("[Header] preToken으로 토큰 교환 시작:", pre);
+      exchangePreToken({ preToken: pre })
+        .unwrap()
+        .then((response) => {
+          console.log("[Header] 토큰 교환 성공:", response);
+          // accessToken과 refreshToken을 쿠키에 저장
+          setCookie(
+            "accessToken",
+            response.accessToken,
+            response.expiresIn || 3600
+          );
+          setCookie("refreshToken", response.refreshToken, 86400 * 7); // 7일
+
+          // preToken 쿠키 제거 (더 이상 필요 없음)
+          document.cookie =
+            "pre=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+          // Redux 상태 업데이트
+          dispatch(setSignState(response.accessToken));
         })
-      );
-    } else if (error) {
-      window.dispatchEvent(
-        new CustomEvent("globalError", { detail: "유저 정보 조회 실패" })
-      );
+        .catch((error) => {
+          console.error("[Header] 토큰 교환 실패:", error);
+          window.dispatchEvent(
+            new CustomEvent("globalError", {
+              detail: "토큰 교환에 실패했습니다. 다시 로그인 해주세요.",
+            })
+          );
+        });
     }
-  }, [isSuccess, data, error, dispatch]);
+  }, [isSigned, pre, hasAccessToken, exchangePreToken, dispatch]);
 
   // UserAvatar 클릭 시 UserWidget 모달 오픈
   const handleAvatarClick = () => setShowUserWidget(true);
@@ -118,12 +153,19 @@ function HeaderDesktopUser() {
               altText="avatar"
             />
           </button>
-          <UserWidget open={showUserWidget} onClose={handleWidgetClose} />
+          <HeaderWidget open={showUserWidget} onClose={handleWidgetClose} />
         </>
       ) : (
         <>
+          <button
+            onClick={handleAvatarClick}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            aria-label="로그인"
+          >
+            로그인
+          </button>
           <SignupButton />
-          <UserWidget open={showUserWidget} onClose={handleWidgetClose} />
+          <HeaderWidget open={showUserWidget} onClose={handleWidgetClose} />
         </>
       )}
     </div>

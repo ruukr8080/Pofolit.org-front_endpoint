@@ -10,7 +10,7 @@ export interface User {
   nickname: string | null;
   profileImageUrl?: string | null;
   providerId: string | null;
-  registrationId: string | null;
+  registrationId: string[] | null;
   birthDay?: string | null; // ISO 8601 형식의 날짜 문자열 (YYYY-MM-DD)
   job?: string | null;
   domain?: string | null;

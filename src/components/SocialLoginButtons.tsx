@@ -29,8 +29,15 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
       className={`${baseClasses} ${
         provider === "google" ? googleClasses : kakaoClasses
       }`}
+      aria-label={`${provider} 계정으로 ${label}`}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
     >
-      <Icon className={iconClasses} />
+      <Icon className={iconClasses} aria-hidden="true" />
       <span>{label}</span>
     </button>
   );
