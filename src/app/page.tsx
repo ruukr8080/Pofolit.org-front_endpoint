@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { UserProfile } from "@/components/UserProfile";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useGetPreStatusQuery } from "@/store/apiConfig";
+import { useGetPreStatusQuery, useGetUserInfoQuery } from "@/store/apiConfig";
 
 function UserProfileSection() {
   const { user, isLoading, error, handleLogout } = useUserProfile();
@@ -32,12 +32,32 @@ function UserProfileSection() {
 }
 
 export default function HomePage() {
-  // 최초 진입 시 pre 상태 확인
-  const { data: preData, isLoading: preLoading, error: preError } = useGetPreStatusQuery();
+  // 최초 진입 시 refreshToken 확인
+  function getCookie(name: string): string | undefined {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
+  }
+  const refreshToken = getCookie("refreshToken");
 
-  if (preLoading) return <LoadingSpinner />;
+  // refreshToken이 있으면 users/me 요청, 없으면 pre 상태만 확인
+  const { isLoading: userLoading, error: userError } = useGetUserInfoQuery(
+    undefined,
+    {
+      skip: !refreshToken,
+    }
+  );
+  const { isLoading: preLoading, error: preError } = useGetPreStatusQuery(
+    undefined,
+    {
+      skip: !!refreshToken,
+    }
+  );
+
+  if (userLoading || preLoading) return <LoadingSpinner />;
+  if (userError) return <div className="text-red-500">유저 정보 확인 실패</div>;
   if (preError) return <div className="text-red-500">pre 상태 확인 실패</div>;
-  // preData 활용 가능 (예: pre 토큰, 세션 상태 등)
+
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div
